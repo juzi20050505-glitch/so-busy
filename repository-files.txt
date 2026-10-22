@@ -1,0 +1,17 @@
+.gitignore
+AGENTS.md
+CHANGELOG.md
+README.md
+VERSION
+check_repository.py
+delivery.template.md
+evidence-policy.md
+execution.md
+project.template.md
+prompt-writing.md
+receipts.md
+receipts.py
+repository-files.txt
+sources.md
+test_receipts.py
+workflow.md
