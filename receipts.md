@@ -19,9 +19,12 @@ python receipts.py --record runtime/episode.sqlite
 | --- | --- | --- |
 | init | scope、authorization | 首次创建；拒绝重置旧记录 |
 | authorize | mode、quote、source | 记录已有明确授权；不自动扩集或预算 |
-| register | id、spec | 登记已核真实卡与采用稿 |
+| register | id、spec、package | 登记已核真实卡、采用正文与执行包 |
+| amend | id、spec、package、evidence | 原始段尚未提交时重新采用，保留改动记录并清除旧保存状态 |
+| confirm_prepared | id、scope、visible、evidence | 核对保存后回读的完整规格，登记已填稿 |
 | intent | id、scope、visible、no_active_same_task=true、evidence | visible 必须与采用 spec 完全相同；持久化后仅本次返回一次点击标记 |
 | observe | id、state、evidence；完成加 result_id，失败加 cause | 回读真实处理中／未知／完成／失败，不提交 |
+| archive | id、result_id、path、evidence，可选 sha256 | 登记该完成结果的本地下载文件，计算字节数和指纹，相同回执可重复核对 |
 | retry | id、new_id、condition_evidence、no_active_same_task=true | 明确技术失败且条件已恢复，保留原失败后建立同规格新尝试 |
 | pause / resume | evidence | 记录用户决定；恢复不清除未决意图 |
 
@@ -30,6 +33,10 @@ python receipts.py --record runtime/episode.sqlite
 `spec` 必须有 card、prompt_sha256、references、mode、seconds、model、resolution。references 为实际绑定的 `{name,node}` 列表，不能用资产库存在代替上传；无需参考时可为空。其余当前影响执行的字段如画幅也应放入 spec，intent 同样完整比较。
 
 extend 另需 source：`{task,result_id,start,end,qualified:true,evidence}`。本工具只支持核过的原生结果为源；平台能力、最大连续长度、实际末态与源媒体真实性由执行者另核，不硬编码为所有平台通则。
+
+0.2.0 新建的单集账本采用格式 2。用 `--package 执行包.json` 或在事件 `data.package` 附完整执行包。登记、确认已保存和生成意图均会重读采用稿，核其字节指纹、秒数、生成方式和有序素材名。技术重试从原任务读取同一个包。旧账本中已登记的无包任务可沿原卡和原授权恢复；新增或未提交原始任务也可以绑定执行包。
+
+本地归档要求 `path` 指向已下载且归属经现场核实的文件。同一结果的已登记指纹如与现有字节冲突，先核实际下载。批次汇总读取登记时的指纹，并轻查路径与大小；需复核字节时再次提交原 `archive` 事件。
 
 ## 虚构初始化示例
 
